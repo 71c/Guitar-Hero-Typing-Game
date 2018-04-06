@@ -1,0 +1,4 @@
+sceneSetups:
+- path: Assets/Guitar Hero Typing Game.unity
+  isLoaded: 1
+  isActive: 1
