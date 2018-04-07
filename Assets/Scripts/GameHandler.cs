@@ -1,7 +1,13 @@
 ﻿using System.Collections; 
 using System.Collections.Generic; 
 using UnityEngine; 
-using UnityEngine.UI; 
+using UnityEngine.UI;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Linq;
+using UnityEditor;
+
+/* i need to completely redo this I think */
 
 public class GameHandler:MonoBehaviour {
 
@@ -17,7 +23,7 @@ public class GameHandler:MonoBehaviour {
 
 	int previousCounterInt; 
 
-	Font font; 
+	Font font;
 
 	public int currentCharWidth;
 
@@ -31,7 +37,33 @@ public class GameHandler:MonoBehaviour {
 
 	public Text scoreText;
 
+	public string[] lines;
+	public string weString = "";
+
+	public GameObject box;
+
+	public List<Text> letters;
+
 	void Start () {
+		TextAsset file = (TextAsset)Resources.Load("output");
+		StringReader reader = new StringReader (file.text);
+		string keylog = reader.ReadToEnd();
+		reader.Close();
+
+		keylog = new Regex ("\n+").Replace (keylog, "\n");
+		string[] weLines = keylog.Split ('\n');
+
+		int desiredSize = 100;
+//		string[] newLines = new string[desiredSize];
+
+		int startingPlace = (int)Random.Range (0, weLines.Length - desiredSize);
+		for (int i = startingPlace; i < startingPlace + desiredSize; i++) {
+//			newLines [i - startingPlace] = weLines [i];
+			weString += weLines [i];
+		}
+//		lines = newLines;
+
+
 		font = Font.CreateDynamicFontFromOSFont("Menlo", 45);
 
 		textContents = ""; 
@@ -42,20 +74,27 @@ public class GameHandler:MonoBehaviour {
 	void Update () {
 		if ((int)counter != previousCounterInt) {
 			if (textContents.Length > 0)
-				currentCharWidth = GetSize (font, textContents.Substring (0, 1)) + 2;
+				currentCharWidth = 27;
+//				currentCharWidth = GetSize (font, textContents.Substring (0, 1)) + 2;
+//				currentCharWidth = GetSize (font, weString.Substring (0, 1));
+//				currentCharWidth = 27;
+//				currentCharWidth = GetSize (font, weString) / weString.Length;
 			updateText();
-			textObject.text = textContents; 
+//			textObject.text = textContents;
+			textObject.text = weString;
 			previousCounterInt = (int)counter;
 
 			defaultTextX -= currentCharWidth;
 
-			if (defaultTextX <= 125) {
+//			if (defaultTextX <= 125) {
+			if (defaultTextX < box.transform.position.x) {
 				charIndex++;
 			}
 			keyAlreadyPressed = false;
 		}
 
-		string temp = textContents.Substring (charIndex);
+//		string temp = textContents.Substring (charIndex);
+		string temp = weString.Substring (charIndex);
 		if (temp.Length > 0)
 			currentCharacter = temp.Substring (0, 1);
 
@@ -63,7 +102,7 @@ public class GameHandler:MonoBehaviour {
 		if (textContents.Length < maxTextLength)
 			textObject.rectTransform.position = new Vector2 (defaultTextX - (currentCharWidth * (counter % 1)), textObject.rectTransform.position.y);
 
-		scoreText.text = "Score: " + score;
+		scoreText.text = "Score: " + score + ", current char: " + currentCharacter;
 	}
 
 	public void OnGUI() {
